@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Segoe UI;
+  background: linear-gradient(135deg, #ff9933, #ffcc80);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.card {
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  width:320px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  text-align:center;
+}
+
+h2 {
+  margin-bottom:15px;
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button {
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  background:#ff9933;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.google {
+  background:#4285F4;
+}
+
+.switch {
+  margin-top:10px;
+  font-size:0.9rem;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Welcome Back 👋</h2>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <button onclick="signup()">Create Account</button>
+
+  <button class="google" onclick="googleLogin()">
+    Continue with Google
+  </button>
+
+  <p class="switch">Explore without login or continue 👆</p>
+</div>
+
+<script type="module">
+import {
+  auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "./auth.js";
+
+window.signup = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  await createUserWithEmailAndPassword(auth, email, pass);
+  alert("Account created ✅");
+};
+
+window.login = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  await signInWithEmailAndPassword(auth, email, pass);
+  window.location.href = "places.html";
+};
+
+window.googleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+  window.location.href = "places.html";
+};
+</script>
+
+</body>
+</html>

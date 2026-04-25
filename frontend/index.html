@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Tourism</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url("https://images.unsplash.com/photo-1548013146-72479768bada");
+      background-size: cover;
+      background-position: center;
+      color: white;
+    }
+
+    /* TOP HEADING */
+    .top-heading {
+      text-align: center;
+      padding: 25px 10px 5px;
+      font-size: 3rem;
+      letter-spacing: 2px;
+    }
+
+    /* TAGLINE */
+    .tagline {
+      text-align: center;
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-bottom: 15px;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* CONTENT BOX */
+    .content {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 35px 45px;
+      border-radius: 15px;
+      max-width: 1000px;
+      width: 90%;
+    }
+
+    /* TEXT */
+    .text {
+      flex: 1;
+    }
+
+    .india-title {
+      font-size: 2.7rem;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    .text p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .ai-hint {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    .text button {
+      padding: 12px 32px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      background: #ff9933;
+      color: black;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .text button:hover {
+      background: #ffffff;
+    }
+
+    /* CARD STACK */
+    .cards {
+      position: relative;
+      width: 260px;
+      height: 360px;
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 15px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      transition: transform 0.8s ease, opacity 0.8s ease;
+    }
+
+    .card:nth-child(1) {
+      z-index: 5;
+      transform: translateX(0) scale(1);
+    }
+
+    .card:nth-child(2) {
+      z-index: 4;
+      transform: translateX(30px) scale(0.95);
+      opacity: 0.8;
+    }
+
+    .card:nth-child(3) {
+      z-index: 3;
+      transform: translateX(60px) scale(0.9);
+      opacity: 0.6;
+    }
+
+    .card:nth-child(4) {
+      z-index: 2;
+      transform: translateX(90px) scale(0.85);
+      opacity: 0.4;
+    }
+
+    .card:nth-child(5) {
+      z-index: 1;
+      transform: translateX(120px) scale(0.8);
+      opacity: 0.2;
+    }
+
+    /* TABLET */
+    @media(max-width:900px) {
+      .content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .cards {
+        margin-top: 20px;
+      }
+    }
+
+    /* MOBILE */
+    @media(max-width:500px) {
+      .top-heading {
+        font-size: 1.9rem;
+      }
+
+      .india-title {
+        font-size: 2rem;
+      }
+
+      .cards {
+        width: 220px;
+        height: 300px;
+      }
+
+      .content {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <body>
+
+    <!-- ✅ NEW NAVBAR -->
+    <header style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 30px;
+    background:#111;
+  ">
+      <h2 style="color:white;">🇮🇳 Bharat Explore</h2>
+
+      <div id="authSection" style="display:flex; gap:10px; align-items:center;">
+
+        <!-- DEFAULT (NOT LOGGED IN) -->
+        <button id="loginBtn" onclick="goToLogin()" style="
+    padding:6px 12px;
+    border-radius:20px;
+    border:none;
+    background:#ff9933;
+    cursor:pointer;
+  ">🔐 Login</button>
+
+        <!-- LOGGED IN VIEW -->
+        <span id="userEmail" style="display:none; color:white;"></span>
+
+        <button id="logoutBtn" onclick="logout()" style="
+    display:none;
+    padding:6px 12px;
+    border-radius:20px;
+    border:none;
+    background:red;
+    color:white;
+    cursor:pointer;
+  ">Logout</button>
+
+      </div>
+    </header>
+
+    <!-- ✅ YOUR ORIGINAL CONTENT (UNCHANGED) -->
+    <h1 class="top-heading">INDIA’S TOURISM</h1>
+    <p class="tagline">Clear • Smart • India-Focused Travel</p>
+    <div class="hero">
+      <div class="content">
+
+        <div class="text">
+          <h2 class="india-title">INDIA</h2>
+          <p>
+            Explore India with clear guidance, real travel conditions,
+            best visiting times, and smart suggestions — without information overload.
+          </p>
+
+          <p class="ai-hint">
+            Powered by smart travel guidance & AI assistance
+          </p>
+
+          <button onclick="location.href='places.html'">
+            Start Exploring
+          </button>
+
+        </div>
+
+        <div class="cards" id="cardStack">
+          <!-- Nature -->
+          <div class="card"
+            style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee');">
+          </div>
+
+          <!-- Heritage -->
+          <div class="card"
+            style="background-image:url('https://images.unsplash.com/photo-1621232082074-1a7750ecc557');">
+          </div>
+
+          <!-- Waterfall -->
+          <div class="card" style="background-image:url('https://images.unsplash.com/photo-1561359313-0639aad49ca6');">
+          </div>
+
+          <!-- Mountains -->
+          <div class="card"
+            style="background-image:url('https://images.unsplash.com/photo-1624554305378-0f440dd3a8c1');">
+          </div>
+
+          <!-- Landscape -->
+          <div class="card"
+            style="background-image:url('https://plus.unsplash.com/premium_photo-1661962542692-4fe7a4ad6b54');"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      const stack = document.getElementById("cardStack");
+
+      setInterval(() => {
+        const firstCard = stack.firstElementChild;
+        stack.appendChild(firstCard);
+      }, 2500);
+    </script>
+
+    <script type="module">
+      import { auth, onAuthStateChanged, signOut } from "./auth.js";
+
+      window.goToLogin = () => {
+        window.location.href = "login.html";
+      };
+
+      window.logout = async () => {
+        await signOut(auth);
+      };
+
+      onAuthStateChanged(auth, user => {
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const userEmail = document.getElementById("userEmail");
+
+        if (user) {
+          loginBtn.style.display = "none";
+          logoutBtn.style.display = "inline-block";
+          userEmail.style.display = "inline-block";
+          userEmail.innerText = "👤 " + user.email;
+        } else {
+          loginBtn.style.display = "inline-block";
+          logoutBtn.style.display = "none";
+          userEmail.style.display = "none";
+        }
+      });
+    </script>
+
+  </body>
+
+</html>

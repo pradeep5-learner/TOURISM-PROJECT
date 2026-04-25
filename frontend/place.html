@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Place Details</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #f4f4f4;
+      color: #222;
+    }
+
+    /* HEADER */
+    header {
+      background: #1a1a1a;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    header a {
+      color: #ff9933;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* IMAGE */
+    .place-image {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 20px;
+    }
+
+    .content h1 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    .content span {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* INFO GRID */
+    .info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .info div {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    /* NEED TO KNOW */
+    .need {
+      margin: 15px 0;
+    }
+
+    .need h3 {
+      margin-bottom: 8px;
+    }
+
+    /* MAP */
+    .map {
+      margin: 20px 0;
+    }
+
+    .map iframe {
+      width: 100%;
+      height: 300px;
+      border: 0;
+      border-radius: 12px;
+    }
+
+    /* AI CHAT */
+    .chatbox {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #fff7ec;
+    }
+
+    .chatbox h3 {
+      margin-bottom: 10px;
+    }
+
+    .chatbox input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    /* MOBILE */
+    @media(max-width:500px) {
+      .place-image {
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a id="backBtn">← Back to places</a>
+  </header>
+
+  <div class="container">
+
+    <img src="" id="placeImg" class="place-image">
+
+    <div class="content">
+      <h1 id="placeName"></h1>
+      <span id="placeState"></span>
+
+      <div class="info">
+        <div>🗓 <strong>Best time:</strong> <span id="bestTime"></span></div>
+        <div>👥 <strong>Crowd:</strong> <span id="crowd"></span></div>
+        <div>⏱ <strong>Duration:</strong> <span id="duration"></span></div>
+        <div>🌦 <strong>Condition:</strong> <span id="condition"></span></div>
+      </div>
+
+      <div class="need">
+        <h3>Need to know</h3>
+        <p id="needText"></p>
+      </div>
+
+      <!-- MAP SECTION -->
+      <div class="map">
+        <h3>Location on Map</h3>
+        <iframe id="mapFrame" loading="lazy"></iframe>
+      </div>
+
+      <!-- AI CHAT UI -->
+      <div class="chatbox">
+        <h3>Ask AI Travel Guide</h3>
+        <input type="text" placeholder="Ask about best time, safety, tips..." disabled>
+        <p style="font-size:0.8rem;opacity:0.7;margin-top:5px;">
+          (AI coming in next steps)
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* PLACE DATA */
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    const backBtn = document.getElementById("backBtn");
+
+    const state = params.get("state") || "";
+    const district = params.get("district") || "";
+    const category = params.get("category") || "";
+    const search = params.get("search") || "";
+    const page = params.get("page") || "1"; // <--- Add this
+
+    const isMain = !params.get("state") && !params.get("district") && !params.get("category") && !params.get("search");
+
+    // If it was the main page, we don't even need the page param, 
+    // the cache on the places.html will handle it.
+    if (isMain) {
+      backBtn.href = "places.html";
+    } else {
+      backBtn.href = `places.html?state=${state}&district=${district}&category=${category}&search=${search}&page=${page}`;
+    }
+
+
+    function getCategoryImage(place) {
+      const cat = place.category?.toLowerCase() || "";
+
+      if (cat.includes("beach"))
+        return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500";
+
+      if (cat.includes("temple"))
+        return "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500";
+
+      if (cat.includes("waterfall"))
+        return "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500";
+
+      if (cat.includes("hill") || cat.includes("mountain"))
+        return "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=500";
+
+      return "https://via.placeholder.com/500x300?text=Explore+India";
+    }
+
+    async function loadPlace() {
+      try {
+        const res = await fetch(`http://localhost:5000/api/places/${id}`);
+        const p = await res.json();
+
+        console.log("PLACE DATA:", p);
+
+        document.getElementById("placeName").innerText = p.name || "Unknown Place";
+
+        document.getElementById("placeState").innerText =
+          `${p.district || "Unknown"}, ${p.state || ""}`;
+
+        document.getElementById("placeImg").src =
+          p.image && p.isFamous ? p.image : getCategoryImage(p);
+
+        document.getElementById("bestTime").innerText = p.bestTime;
+        document.getElementById("crowd").innerText = p.crowd;
+        document.getElementById("duration").innerText = p.duration;
+        document.getElementById("condition").innerText = "Check weather before visiting";
+
+        document.getElementById("needText").innerText =
+          p.description || "No description available";
+        if (p.lat && p.lng) {
+          document.getElementById("mapFrame").src =
+            `https://www.google.com/maps?q=${p.lat},${p.lng}&output=embed`;
+        } else {
+          document.querySelector(".map").style.display = "none";
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function getCategoryImage(place) {
+      const cat = place.category?.toLowerCase() || "default";
+
+      if (cat.includes("beach"))
+        return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500";
+
+      if (cat.includes("temple"))
+        return "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500";
+
+      if (cat.includes("waterfall"))
+        return "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500";
+
+      return "https://via.placeholder.com/400x300?text=Explore+India";
+    }
+
+    loadPlace();
+
+    /* LOAD PLACE */
+
+  </script>
+
+</body>
+
+</html>

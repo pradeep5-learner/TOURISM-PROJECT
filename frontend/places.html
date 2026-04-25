@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore India</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* YOUR ORIGINAL STYLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Segoe UI;
+    }
+
+    body {
+      background: #f4f4f4;
+    }
+
+    header {
+      background: #111;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    header a {
+      color: #ff9933;
+      text-decoration: none;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: white;
+    }
+
+    .filters select,
+    .filters input {
+      padding: 8px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+
+    #tripResult {
+      max-width: 1200px;
+      margin: 10px auto;
+      padding: 15px;
+      background: #fff3e0;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .places {
+      max-width: 1200px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      min-height: 350px;
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .card img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+    }
+
+    .card .info {
+      padding: 15px;
+    }
+
+    .card button {
+      margin-top: 6px;
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 20px;
+      background: #ff9933;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* CHAT STYLES (Added carefully) */
+    .ai-response {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ff9933;
+    }
+
+    .user-response {
+      text-align: right;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    #chatbot {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 350px;
+      height: 450px;
+      background: white;
+      border-radius: 15px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+  </style>
+</head>
+
+
+
+<body>
+
+
+
+  <header style="
+  background:#111;
+  color:white;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+">
+
+    <h2>Explore India</h2>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+
+      <a href="wishlist.html" style="color:#ff9933;">❤️ Wishlist</a>
+
+      <button onclick="planTrip()" style="
+      padding:6px 12px;
+      border-radius:20px;
+      border:none;
+      background:#ff9933;
+      cursor:pointer;
+    ">
+        ✈️ Plan Trip
+      </button>
+
+      <div id="authSection" style="display:flex; gap:10px; align-items:center;">
+
+        <!-- DEFAULT (NOT LOGGED IN) -->
+        <button id="loginBtn" onclick="goToLogin()" style="
+    padding:6px 12px;
+    border-radius:20px;
+    border:none;
+    background:#ff9933;
+    cursor:pointer;
+  ">🔐 Login</button>
+
+        <!-- LOGGED IN VIEW -->
+        <span id="userEmail" style="display:none; color:white;"></span>
+
+        <button id="logoutBtn" onclick="logout()" style="
+    display:none;
+    padding:6px 12px;
+    border-radius:20px;
+    border:none;
+    background:red;
+    color:white;
+    cursor:pointer;
+  ">Logout</button>
+
+      </div>
+
+    </div>
+
+  </header>
+
+  <div class="filters">
+    <input id="searchInput" placeholder="Search place">
+    <select id="stateSelect">
+      <option value="">🌍 All States</option>
+    </select>
+    <select id="districtSelect">
+      <option value="">All Districts</option>
+    </select>
+    <select id="categorySelect">
+      <option value="">All Categories</option>
+    </select>
+  </div>
+
+  <div id="tripResult" style="
+  max-width: 1200px;
+  margin: 10px auto;
+  padding: 15px;
+  background: #fff3e0;
+  border-radius: 10px;
+  display: none;
+  position: relative;
+">
+
+    <!-- ✅ CLOSE BUTTON -->
+    <button onclick="document.getElementById('tripResult').style.display='none'" style="
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: none;
+      background: red;
+      color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+    ">
+      ❌
+    </button>
+
+    <h3>✈️ Your Trip Plan</h3>
+    <p id="tripText"></p>
+    <button id="mapBtn">🌍 View in Google Maps</button>
+
+  </div>
+
+  <div class="places" id="placesContainer"></div>
+  <div style="text-align:center; margin:20px;">
+    <button id="loadMoreBtn" onclick="loadMore()" style="
+    padding:10px 20px;
+    border:none;
+    border-radius:20px;
+    background:#ff9933;
+    cursor:pointer;
+  ">
+      Load More
+    </button>
+  </div>
+
+  <div onclick="toggleChat()"
+    style="position:fixed;bottom:20px;right:20px;width:60px;height:60px;background:#ff9933;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;z-index:1001;">
+    🤖
+  </div>
+
+  <div id="chatbot">
+    <div
+      style="background:#ff9933;padding:10px;font-weight:bold;color:white;border-top-left-radius:15px;border-top-right-radius:15px;">
+      🤖 Travel AI
+    </div>
+    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:10px;"></div>
+    <div style="display:flex;border-top:1px solid #ddd;">
+      <input id="chatInput" placeholder="Ask..." style="flex:1;padding:8px;border:none;outline:none;">
+      <button onclick="sendMessage()"
+        style="padding:8px;background:#ff9933;border:none;color:white;cursor:pointer;font-weight:bold;">Send</button>
+    </div>
+  </div>
+
+
+  <script type="module">
+    /* YOUR ORIGINAL LOGIC (Untouched) */
+    let isLoading = false;
+    let allPlaces = [];
+
+    const categoryImages = {
+
+      beach: [
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        "https://images.unsplash.com/photo-1473116763249-2faaef81ccda",
+        "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21",
+        "https://images.unsplash.com/photo-1520454974749-611b7248ffdb",
+        "https://images.unsplash.com/photo-1501959915551-4e8d30928317",
+        "https://images.unsplash.com/photo-1493558103817-58b2924bce98",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        "https://images.unsplash.com/photo-1519046904884-53103b34b206",
+        "https://images.unsplash.com/photo-1470770903676-69b98201ea1c"
+      ],
+
+      mountain: [
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+        "https://images.unsplash.com/photo-1464822759844-d150baec93c5",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d",
+        "https://images.unsplash.com/photo-1439853949127-fa647821eba0",
+        "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+      ],
+
+      temple: [
+        "https://images.unsplash.com/photo-1565195161077-f5c5f61f9ea2",
+        "https://images.unsplash.com/photo-1600100397608-f09075704f66",
+        "https://images.unsplash.com/photo-1599661046827-dacde6976547",
+        "https://images.unsplash.com/photo-1627894483216-2138af692e32",
+        "https://images.unsplash.com/photo-1586500036706-41963de24d8f",
+        "https://images.unsplash.com/photo-1573053009372-6c5d7b4b0a35",
+        "https://images.unsplash.com/photo-1600508774634-4e11d34730e2",
+        "https://images.unsplash.com/photo-1588416499018-1d1c6d9e52c7",
+        "https://images.unsplash.com/photo-1589308078055-832f3b2a36c0",
+        "https://images.unsplash.com/photo-1593696140826-c58b021acf8b"
+      ],
+
+      waterfall: [
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+        "https://images.unsplash.com/photo-1502082553048-f009c37129b9",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
+        "https://images.unsplash.com/photo-1522163182402-834f871fd851",
+        "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+        "https://images.unsplash.com/photo-1437623889155-075d40e2e59f",
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+      ],
+
+      nature: [
+        "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+        "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d",
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+        "https://images.unsplash.com/photo-1437623889155-075d40e2e59f",
+        "https://images.unsplash.com/photo-1502082553048-f009c37129b9",
+        "https://images.unsplash.com/photo-1472214103451-9374bd1c798e"
+      ],
+
+      heritage: [
+        "https://images.unsplash.com/photo-1524492412937-b28074a5d7da",
+        "https://images.unsplash.com/photo-1505761671935-60b3a7427bad",
+        "https://images.unsplash.com/photo-1548013146-72479768bada",
+        "https://images.unsplash.com/photo-1526481280690-906d2c4c6b4b",
+        "https://images.unsplash.com/photo-1516483638261-f4dbaf036963",
+        "https://images.unsplash.com/photo-1564507592333-c60657eea523",
+        "https://images.unsplash.com/photo-1539650116574-75c0c6d4d6d0",
+        "https://images.unsplash.com/photo-1549887534-3ec93abae2c6",
+        "https://images.unsplash.com/photo-1580136606417-1f4a2b29a0c3",
+        "https://images.unsplash.com/photo-1505739779915-3aaf98f0f75c"
+      ],
+
+      wildlife: [
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+        "https://images.unsplash.com/photo-1474511320723-9a56873867b5",
+        "https://images.unsplash.com/photo-1444212477490-ca407925329e",
+        "https://images.unsplash.com/photo-1508672019048-805c876b67e2",
+        "https://images.unsplash.com/photo-1472214103451-9374bd1c798e",
+        "https://images.unsplash.com/photo-1501706362039-c6b2a54dbb0c",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
+        "https://images.unsplash.com/photo-1501706362039-c6b2a54dbb0c",
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+      ],
+
+      default: [
+        "https://images.unsplash.com/photo-1526779259212-756e9fefc0c7"
+      ]
+    };
+
+    function getCategoryImage(place) {
+
+      const cat = place.category?.toLowerCase() || "";
+
+      // 🔥 HANDLE SUB-CATEGORIES
+      if (cat.includes("beach")) return random(categoryImages.beach);
+      if (cat.includes("temple")) return random(categoryImages.temple);
+      if (cat.includes("waterfall")) return random(categoryImages.waterfall);
+      if (cat.includes("mountain") || cat.includes("hill")) return random(categoryImages.mountain);
+      if (cat.includes("nature")) return random(categoryImages.nature);
+      if (cat.includes("heritage") || cat.includes("historical")) return random(categoryImages.heritage);
+      if (cat.includes("wildlife")) return random(categoryImages.wildlife);
+
+      return random(categoryImages.default);
+    }
+
+    function random(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    import { auth, onAuthStateChanged, signOut } from "./auth.js";
+
+    window.goToLogin = () => {
+      window.location.href = "login.html";
+    };
+
+    window.logout = async () => {
+      await signOut(auth);
+    };
+
+    onAuthStateChanged(auth, user => {
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userEmail = document.getElementById("userEmail");
+
+      if (user) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        userEmail.style.display = "inline-block";
+        userEmail.innerText = "👤 " + user.email;
+      } else {
+        loginBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+        userEmail.style.display = "none";
+      }
+
+      fetchPlaces();
+      // Remove the fetchPlaces() calls from here! window.onload handles it.
+    });
+
+    let placesData = [];
+    let wishlistIds = [];
+    let allStates = [];
+    const stateSelect = document.getElementById("stateSelect");
+    const districtSelect = document.getElementById("districtSelect");
+    const categorySelect = document.getElementById("categorySelect");
+    const searchInput = document.getElementById("searchInput");
+    const container = document.getElementById("placesContainer");
+
+    async function loadWishlistIds() {
+      if (!auth.currentUser) {
+        wishlistIds = [];
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/api/wishlist/${auth.currentUser.email}`);
+      const data = await res.json();
+
+      wishlistIds = data.map(p => p._id);
+    }
+
+    let currentPage = 1;
+    let currentQuery = "";
+
+    async function fetchPlaces(isLoadMore = false) {
+      if (isLoading) return;
+      isLoading = true;
+
+      await loadWishlistIds();
+
+      // 1. Correctly get values from the UI elements
+      const state = stateSelect.value;
+      const district = districtSelect.value;
+      const category = categorySelect.value;
+      const search = searchInput.value;
+
+      const paramsURL = new URLSearchParams(window.location.search);
+      const urlPage = parseInt(paramsURL.get("page")) || 1;
+
+      // Determine if we are on the fresh, unfiltered homepage
+      const isMainPage = !state && !district && !category && !search;
+
+      // 2. Check Cache (with safety check)
+      if (isMainPage && !isLoadMore && urlPage === 1) {
+        const saved = sessionStorage.getItem("homepagePlaces");
+        if (saved && saved !== "[]") {
+          placesData = JSON.parse(saved);
+          isLoading = false;
+          renderPlaces();
+          // Keep the load more button hidden for the 60 famous places
+          document.getElementById("loadMoreBtn").style.display = "none";
+          return;
+        }
+      }
+
+      // 3. Build the API Request
+      let params = [];
+      if (isMainPage) {
+        params.push("famous=true");
+      }
+      if (state) params.push(`state=${encodeURIComponent(state)}`);
+      if (district) params.push(`district=${encodeURIComponent(district)}`);
+      if (category) params.push(`category=${encodeURIComponent(category)}`);
+      if (search) params.push(`search=${encodeURIComponent(search)}`);
+
+      let url = `http://localhost:5000/api/places?limit=20&page=${currentPage}`;
+      if (params.length > 0) {
+        url += "&" + params.join("&");
+      }
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.length === 0 && !isLoadMore) {
+          placesData = [];
+        } else if (!isLoadMore) {
+          placesData = data;
+          // Save to cache for next time
+          if (isMainPage) sessionStorage.setItem("homepagePlaces", JSON.stringify(data));
+        } else {
+          // Append unique items only
+          const existingIds = new Set(placesData.map(p => p._id));
+          const uniqueNewData = data.filter(p => !existingIds.has(p._id));
+          placesData = [...placesData, ...uniqueNewData];
+        }
+
+        // Toggle Load More button based on results
+        const loadBtn = document.getElementById("loadMoreBtn");
+        loadBtn.style.display = (data.length < 20 || isMainPage) ? "none" : "inline-block";
+
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
+        isLoading = false;
+        renderPlaces(); // This will now show the data or "No places found" correctly
+      }
+
+      // 4. Load states/categories once if they are missing
+      if (allStates.length === 0) {
+        const allRes = await fetch("http://localhost:5000/api/allPlaces");
+        allPlaces = await allRes.json();
+        allStates = [...new Set(allPlaces.map(p => p.state).filter(Boolean))];
+        loadStates();
+      }
+    }
+
+
+
+    window.onload = async () => {
+      // 1. Initial Data Setup
+      const allRes = await fetch("http://localhost:5000/api/allPlaces");
+      allPlaces = await allRes.json();
+      allStates = [...new Set(allPlaces.map(p => p.state).filter(Boolean))];
+      loadStates();
+
+      // 2. Check URL for State Restoration
+      const params = new URLSearchParams(window.location.search);
+
+      const isMainPage = !params.get("state") && !params.get("district") && !params.get("category") && !params.get("search");
+
+      // NEW LOGIC: If it's the main page and we have a cache, USE IT.
+      if (isMainPage) {
+        const saved = sessionStorage.getItem("homepagePlaces");
+        if (saved && saved !== "[]") {
+          placesData = JSON.parse(saved);
+          renderPlaces();
+
+          // Still handle scroll restoration
+          const savedScroll = sessionStorage.getItem("scrollPos");
+          if (savedScroll) {
+            setTimeout(() => {
+              window.scrollTo({ top: parseInt(savedScroll), behavior: 'instant' });
+              sessionStorage.removeItem("scrollPos");
+            }, 350);
+          }
+          return; // STOP HERE, don't fetch from API
+        }
+      }
+      const savedPage = parseInt(params.get("page")) || 1;
+
+      // 3. Handle Fresh Visit vs. Coming Back
+      if (!window.location.search) {
+        await fetchPlaces(); // Normal fresh load
+      } else {
+        // Restore filters and load the specific number of pages
+        currentPage = savedPage;
+        const stateParam = params.get("state") || "";
+        const districtParam = params.get("district") || "";
+        const categoryParam = params.get("category") || "";
+
+        stateSelect.value = stateParam;
+
+        // ✅ Load districts with selected value
+        if (stateParam) {
+          loadDistricts(districtParam);
+        }
+
+        // ✅ Load categories with selected value
+        loadCategories(categoryParam);
+        searchInput.value = params.get("search") || "";
+
+        await fetchInitialPlaces(savedPage); // Load all items at once
+
+        // 4. Restore Scroll Position
+        const savedScroll = sessionStorage.getItem("scrollPos");
+        if (savedScroll) {
+          setTimeout(() => {
+            window.scrollTo(0, parseInt(savedScroll));
+            sessionStorage.removeItem("scrollPos");
+          }, 500);
+        }
+      }
+    };
+
+    async function fetchInitialPlaces(pagesToLoad) {
+      isLoading = true;
+      renderPlaces();
+      const limit = 20 * pagesToLoad;
+
+      const isMainPage = !stateSelect.value && !districtSelect.value && !categorySelect.value && !searchInput.value;
+      // Build URL based on dropdowns
+      let url = `http://localhost:5000/api/places?limit=${limit}&page=1`;
+      if (isMainPage) {
+        url += "&famous=true"; // This ensures you get your 60 famous places back
+      } else {
+        if (stateSelect.value) url += `&state=${encodeURIComponent(stateSelect.value)}`;
+        if (districtSelect.value) url += `&district=${encodeURIComponent(districtSelect.value)}`;
+        if (categorySelect.value) url += `&category=${encodeURIComponent(categorySelect.value)}`;
+        if (searchInput.value) url += `&search=${encodeURIComponent(searchInput.value)}`;
+      }
+
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        placesData = data;
+        document.getElementById("loadMoreBtn").style.display = isMainPage ? "none" : "block";
+      } catch (e) {
+        console.error("Restoration failed:", e);
+      } finally {
+        isLoading = false;
+        renderPlaces();
+      }
+    }
+
+    function loadStates() {
+      const selectedState = stateSelect.value; // ✅ save current selection
+
+      stateSelect.innerHTML = '<option value="">🌍 All States</option>';
+
+      allStates.sort().forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+
+        // ✅ KEEP SELECTED VALUE
+        if (s === selectedState) {
+          opt.selected = true;
+        }
+
+        stateSelect.appendChild(opt);
+      });
+    }
+
+    function loadDistricts(selectedDistrict = "") {
+
+      districtSelect.innerHTML = '<option value="">All Districts</option>';
+
+      if (!stateSelect.value) return;
+
+      const districts = [...new Set(
+        allPlaces
+          .filter(p => p.state === stateSelect.value)
+          .map(p => p.district)
+          .filter(Boolean)
+      )];
+
+      districts.sort().forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        districtSelect.appendChild(opt);
+      });
+
+      districtSelect.value = selectedDistrict;
+    }
+
+    function loadCategories(selectedCategory = "") {
+
+      let filtered = allPlaces; // ✅ USE ALL DATA
+
+      if (stateSelect.value) {
+        filtered = filtered.filter(p => p.state === stateSelect.value);
+      }
+
+      if (districtSelect.value) {
+        filtered = filtered.filter(p => p.district === districtSelect.value);
+      }
+
+      const categories = [...new Set(
+        filtered.map(p => p.category).filter(Boolean)
+      )];
+
+      categorySelect.innerHTML = '<option value="">All Categories</option>';
+
+      categories.sort().forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+
+        if (c === selectedCategory) {
+          opt.selected = true;
+        }
+
+        categorySelect.appendChild(opt);
+      });
+
+      categorySelect.value = selectedCategory;
+    }
+
+    function renderPlaces() {
+      const search = searchInput.value.toLowerCase();
+      let filtered = placesData.filter(p => p.name.toLowerCase().includes(search));
+
+      if (isLoading && filtered.length === 0) {
+        container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>Loading places...</p>";
+        return;
+      }
+
+      if (!isLoading && filtered.length === 0) {
+        container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No places found.</p>";
+        return;
+      }
+
+      container.innerHTML = ""; // Clear for re-rendering
+
+      filtered.forEach(p => {
+        const isAdded = wishlistIds.includes(p._id);
+
+        // Create the card element
+        const card = document.createElement("div");
+        card.className = "card";
+
+        // Create the inner HTML (everything except the Details button)
+        card.innerHTML = `
+      <img src="${p.image}" 
+           loading="lazy"
+           onerror="this.src='https://images.unsplash.com/photo-1526779259212-756e9fefc0c7'">
+      <div class="info">
+        <h3>${p.name}</h3>
+        <p>📍 ${p.district}, ${p.state}</p>
+        <p>🏷 ${p.category}</p>
+
+        <label>
+          <input type="checkbox" value="${p._id}" class="tripSelect">
+          Select for Trip
+        </label>
+      </div>
+    `;
+
+        const infoDiv = card.querySelector(".info");
+
+        // 1. CREATE THE VIEW DETAILS BUTTON MANUALLY
+        const viewBtn = document.createElement("button");
+        viewBtn.innerHTML = "📍 View Details";
+
+        viewBtn.onclick = () => {
+          // SAVE SCROLL POSITION
+          sessionStorage.setItem("scrollPos", window.scrollY);
+
+          // NAVIGATE WITH ALL PARAMETERS
+          const s = encodeURIComponent(stateSelect.value);
+          const d = encodeURIComponent(districtSelect.value);
+          const c = encodeURIComponent(categorySelect.value);
+          const q = encodeURIComponent(searchInput.value);
+
+          window.location.href = `place.html?id=${p._id}&state=${s}&district=${d}&category=${c}&search=${q}&page=${currentPage}`;
+        };
+
+        // 2. CREATE THE WISHLIST BUTTON
+        const wishBtn = document.createElement("button");
+        wishBtn.id = `wish-${p._id}`;
+        wishBtn.style.background = isAdded ? 'green' : '#ff9933';
+        wishBtn.innerHTML = isAdded ? '❤️ Added' : '🤍 Add';
+        wishBtn.onclick = () => addToWishlist(p._id);
+
+        // Append buttons to the info div
+        infoDiv.appendChild(viewBtn);
+        infoDiv.appendChild(wishBtn);
+
+        container.appendChild(card);
+      });
+    }
+
+
+    window.addToWishlist = async function (id) {
+      if (!auth.currentUser) {
+        alert("Please login ❤️");
+        window.location.href = "login.html";
+        return;
+      }
+
+      await fetch("http://localhost:5000/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeId: id,
+          email: auth.currentUser.email
+        })
+      });
+
+      wishlistIds.push(id);
+
+      const btn = document.getElementById(`wish-${id}`);
+      if (btn) {
+        btn.innerText = "❤️ Added";
+        btn.style.background = "green";
+      }
+    };
+
+    function distance(a, b) {
+      return Math.sqrt(Math.pow(a.lat - b.lat, 2) + Math.pow(a.lng - b.lng, 2));
+    }
+
+    window.planTrip = function () {
+      const selectedIds = [...document.querySelectorAll(".tripSelect:checked")].map(cb => cb.value);
+      console.log(selectedIds);
+      const selectedPlaces = placesData.filter(p => selectedIds.includes(p._id)); // Use _id
+
+      if (selectedPlaces.length < 2) { alert("Select at least 2 places"); return; }
+
+      let ordered = [];
+      let remaining = [...selectedPlaces];
+      let current = remaining.shift();
+      ordered.push(current);
+
+      while (remaining.length > 0) {
+        let nearest = remaining[0];
+        let minDist = distance(current, nearest);
+        let nearestIndex = 0;
+
+        for (let i = 0; i < remaining.length; i++) {
+          let d = distance(current, remaining[i]);
+          if (d < minDist) {
+            minDist = d;
+            nearest = remaining[i];
+            nearestIndex = i;
+          }
+        }
+        ordered.push(nearest);
+        current = nearest;
+        remaining.splice(nearestIndex, 1); // Remove by index to prevent infinite loop
+      }
+
+      const routeNames = ordered.map(p => p.name);
+      document.getElementById("tripText").innerText = routeNames.join(" → ");
+      const origin = encodeURIComponent(routeNames[0]);
+      const destination = encodeURIComponent(routeNames[routeNames.length - 1]);
+      const waypoints = routeNames.slice(1, -1).map(name => encodeURIComponent(name)).join('|');
+
+      const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
+      document.getElementById("mapBtn").onclick = () => window.open(mapUrl, '_blank');
+      document.getElementById("tripResult").style.display = "block";
+    }
+
+    window.openPlace = function (id) {
+      const state = stateSelect.value;
+      const district = districtSelect.value;
+      const category = categorySelect.value;
+      const search = searchInput.value;
+      const page = currentPage; // Save current page too
+
+      // Log this to your console (F12) to make sure it's working
+      console.log("Saving scroll position:", window.scrollY);
+      sessionStorage.setItem("scrollPos", window.scrollY);
+
+      window.location.href = `place.html?id=${id}&state=${state}&district=${district}&category=${category}&search=${search}&page=${page}`;
+    }
+
+    stateSelect.addEventListener("change", async () => {
+      currentPage = 1;
+      districtSelect.value = "";
+      categorySelect.value = "";
+
+      // Update the URL without reloading the page
+      const url = new URL(window.location);
+      if (stateSelect.value) {
+        url.searchParams.set("state", stateSelect.value);
+      } else {
+        url.searchParams.delete("state");
+        url.searchParams.delete("district"); // Clear district too if state is gone
+      }
+      window.history.pushState({}, '', url);
+
+      await fetchPlaces();
+      loadDistricts();
+      loadCategories();
+    });
+
+    districtSelect.addEventListener("change", () => {
+      currentPage = 1;// ✅ ADD
+      fetchPlaces();
+    });
+
+    categorySelect.addEventListener("change", () => {
+      currentPage = 1;
+      fetchPlaces();
+    });
+
+    searchInput.addEventListener("input", () => {
+      currentPage = 1; // ✅ ADD
+      fetchPlaces();
+    });
+
+    function saveFilters() {
+      localStorage.setItem("filters", JSON.stringify({
+        state: stateSelect.value,
+        district: districtSelect.value,
+        category: categorySelect.value,
+        search: searchInput.value
+      }));
+    }
+
+    function loadFiltersFromURL() {
+      const params = new URLSearchParams(window.location.search);
+
+      const urlState = params.get("state");
+      const urlDistrict = params.get("district");
+      const urlCategory = params.get("category");
+      const urlSearch = params.get("search");
+
+      if (urlState) {
+        stateSelect.value = urlState;
+        // Trigger logic to show districts for this state
+        loadDistricts();
+        if (urlDistrict) districtSelect.value = urlDistrict;
+      }
+
+      if (urlCategory) {
+        // Refresh categories based on the selected state/district
+        loadCategories();
+        categorySelect.value = urlCategory;
+      }
+
+      if (urlSearch) {
+        searchInput.value = urlSearch;
+      }
+
+      // Optional: If you want the page to show the filtered results immediately
+      // and you haven't called it yet, you can call renderPlaces() here.
+      renderPlaces();
+    }
+
+    /* CHATBOT LOGIC (Added without affecting above code) */
+    window.toggleChat = function () {
+      const chat = document.getElementById("chatbot");
+      chat.style.display = (chat.style.display === "none" || chat.style.display === "") ? "flex" : "none";
+    }
+
+    window.sendMessage = async function () {
+      const input = document.getElementById("chatInput");
+      const chatBox = document.getElementById("chatMessages");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      chatBox.innerHTML += `<div class="user-response">You: ${msg}</div>`;
+      input.value = "";
+      const id = "load" + Date.now();
+      chatBox.innerHTML += `<div id="${id}" class="ai-response">AI is thinking...</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        document.getElementById(id).remove();
+        chatBox.innerHTML += `<div class="ai-response"><b>AI:</b><br>${marked.parse(data.reply)}</div>`;
+      } catch (error) {
+        document.getElementById(id).innerText = "AI is resting (Quota reached). Please try again in 1 minute!";
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Added Enter key listener for chat input
+    document.getElementById("chatInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    window.loadMore = async function () {
+      if (isLoading) return;
+      currentPage++;
+
+      // Update the URL to include the new page number
+      const url = new URL(window.location);
+      url.searchParams.set("page", currentPage);
+      window.history.pushState({}, '', url);
+
+      await fetchPlaces(true);
+    };
+
+
+  </script>
+
+
+
+</body>
+
+</html>
