@@ -218,7 +218,7 @@
 
     async function loadPlace() {
       try {
-        const res = await fetch('https://tourism-project-3yli.onrender.com/api/places/${id}');
+        const res = await fetch(`https://tourism-project-3yli.onrender.com/api/places/${id}`);
         const p = await res.json();
 
         console.log("PLACE DATA:", p);
