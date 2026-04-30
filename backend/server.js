@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Place = require('./models/place');
-const User = require('./models/User');
+const User = require('./models/user');
 
 const app = express();
 app.use(cors());
