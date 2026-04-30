@@ -124,7 +124,7 @@ onAuthStateChanged(auth, user => {
 
 // LOAD WISHLIST
 async function loadWishlist() {
-  const res = await fetch(`http://localhost:5000/api/wishlist/${userEmail}`);
+  const res = await fetch(`https://tourism-project-3yli.onrender.com/api/wishlist/${userEmail}`);
   const places = await res.json();
 
   const container = document.getElementById("wishlistContainer");
@@ -154,9 +154,9 @@ async function loadWishlist() {
 
 // REMOVE
 window.removeFromWishlist = async function(id) {
-  await fetch(`http://localhost:5000/api/wishlist/${userEmail}/${id}`, {
-    method: "DELETE"
-  });
+  await fetch(`https://tourism-project-3yli.onrender.com/api/wishlist/${userEmail}/${id}`, {
+  method: "DELETE"
+});
 
   loadWishlist();
 };
@@ -181,7 +181,7 @@ window.planTrip = function() {
     return;
   }
 
-  fetch(`http://localhost:5000/api/wishlist/${userEmail}`)
+  fetch(`https://tourism-project-3yli.onrender.com/api/wishlist/${userEmail}`)
     .then(res => res.json())
     .then(placesData => {
 
