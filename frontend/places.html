@@ -433,7 +433,7 @@
         return;
       }
 
-      const res = await fetch(`http://localhost:5000/api/wishlist/${auth.currentUser.email}`);
+      const res = await fetch(`https://tourism-project-3yli.onrender.com/api/wishlist/${auth.currentUser.email}`);
       const data = await res.json();
 
       wishlistIds = data.map(p => p._id);
@@ -483,7 +483,7 @@
       if (category) params.push(`category=${encodeURIComponent(category)}`);
       if (search) params.push(`search=${encodeURIComponent(search)}`);
 
-      let url = `http://localhost:5000/api/places?limit=20&page=${currentPage}`;
+      let url = `https://tourism-project-3yli.onrender.com/api/places?limit=20&page=${currentPage}`;
       if (params.length > 0) {
         url += "&" + params.join("&");
       }
@@ -518,7 +518,7 @@
 
       // 4. Load states/categories once if they are missing
       if (allStates.length === 0) {
-        const allRes = await fetch("http://localhost:5000/api/allPlaces");
+        const allRes = await fetch("https://tourism-project-3yli.onrender.com/api/allPlaces");
         allPlaces = await allRes.json();
         allStates = [...new Set(allPlaces.map(p => p.state).filter(Boolean))];
         loadStates();
@@ -529,7 +529,7 @@
 
     window.onload = async () => {
       // 1. Initial Data Setup
-      const allRes = await fetch("http://localhost:5000/api/allPlaces");
+      const allRes = await fetch("https://tourism-project-3yli.onrender.com/api/allPlaces");
       allPlaces = await allRes.json();
       allStates = [...new Set(allPlaces.map(p => p.state).filter(Boolean))];
       loadStates();
@@ -600,7 +600,7 @@
 
       const isMainPage = !stateSelect.value && !districtSelect.value && !categorySelect.value && !searchInput.value;
       // Build URL based on dropdowns
-      let url = `http://localhost:5000/api/places?limit=${limit}&page=1`;
+      let url = `https://tourism-project-3yli.onrender.com/api/places?limit=${limit}&page=1`;
       if (isMainPage) {
         url += "&famous=true"; // This ensures you get your 60 famous places back
       } else {
@@ -781,7 +781,7 @@
         return;
       }
 
-      await fetch("http://localhost:5000/api/wishlist", {
+      await fetch("https://tourism-project-3yli.onrender.com/api/wishlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -951,7 +951,7 @@
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
-        const res = await fetch("http://localhost:5000/api/chat", {
+        const res = await fetch("https://tourism-project-3yli.onrender.com/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: msg })
